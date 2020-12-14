@@ -12,7 +12,7 @@ Encoding:   utf8
 using namespace std;
 
 #define MEMSIZE 100 /*定义内存的大小为100*/
-#define MINSIZE 2   /*如果小于此值，将不再分割内存*/
+#define MINSIZE 2   /*如果分割后小于等于此值，将不再分割内存*/
 
 /*内存分区空间表结构*/
 typedef struct _MemoryInfomation
@@ -22,16 +22,16 @@ typedef struct _MemoryInfomation
     char status;    /*状态 F:空闲(Free) U:占用(Used) E 结束(End)*/
 } MEMINFO;
 
-MEMINFO MemList[MEMSIZE];   // 内存空间信息表
+MEMINFO MemList[MEMSIZE/MINSIZE];   // 内存空间信息表
 
-// 显示内存状态
+// 显示非结束状态的内存空间状况
 void Display()
 {
-    int i,used=0;//记录可以使用的总空间量
+    int used=0;//记录可以使用的总空间量
     printf("\n---------------------------------------------------\n");
     printf("%5s%15s%15s%15s\n","Number","start","size","status");
     printf("---------------------------------------------------\n");
-    for(i=0; i<MEMSIZE && MemList[i].status!='e'; i++)
+    for(int i=0; i<MEMSIZE && MemList[i].status!='e'; i++)
     {
         if(MemList[i].status=='u')
         {
@@ -41,6 +41,27 @@ void Display()
     }
     printf("---------------------------------------------------\n");
     printf("Totalsize:%-10d Used:%-10d Free:%-10d\n",MEMSIZE,used,MEMSIZE-used);
+}
+
+void showFree()
+{
+    int used=0;
+    printf("\n---------------------------------------------------\n");
+    printf("%5s%15s%15s%15s\n","Number","start","size","status");
+    printf("---------------------------------------------------\n");
+    for(int i=0; i<MEMSIZE && MemList[i].status!='e'; i++)
+    {
+        if(MemList[i].status=='u')
+        {
+            used+=MemList[i].Size;
+        }
+        else
+        {
+            printf("%5d%15d%15d%15s\n",i,MemList[i].start,MemList[i].Size,"FREE");
+        }
+    }
+    printf("---------------------------------------------------\n");
+    printf("Totalsize:%-10d Used:%-10d Free:%-10d\n",MEMSIZE,used,MEMSIZE-used);  
 }
 
 // 初始化所有变量
@@ -66,42 +87,40 @@ void InitMemList()
 void WorstFit_alloc()
 {
     int i,j,k,flag,request;
-    printf("WorstFit_alloc: How Many MEMORY requir?\n");
+    printf("Please input Memory require size: ");
     scanf("%d",&request);
-    j=0;
-    flag=0;
-    k=0;
-    //保存满足要求的最大空间
-    for(i=0;i<MEMSIZE-1&&MemList[i].status!='e';i++)
+    j = flag = k = 0;
+
+    for(i=0;i<MEMSIZE-1&&MemList[i].status!='e';i++)        //寻找是否存在满足要求的最大空间
     {
         if(MemList[i].Size>=request&&MemList[i].status=='f')
         {
-            flag=1;
+            flag=1; //有就标记1，没有就默认标记0
             if(MemList[i].Size>k)
             {
-                k=MemList[i].Size;
-                j=i;
+                k=MemList[i].Size;  //找到最大的空间
+                j=i;    //记住找到的位置和大小
             }
         }
     }
     i=j;
-    if(flag==0)
+    if(flag==0) //可用内存不足
     {
         printf("Not Enough Memory!\n");
         j=i;
-    }else if(MemList[i].Size-request<=MINSIZE)
+    }else if(MemList[i].Size-request<=MINSIZE)  //不可分割
     {
         MemList[i].status='u';
-    }else
+    }else   //可分割
     {
         for(j=MEMSIZE-2;j>i;j--)
         {
-            MemList[j+1]=MemList[j];
+            MemList[j+1]=MemList[j];    // 后移状态为e的空间
         }
-        MemList[i+1].start=MemList[i].start+request;
+        MemList[i+1].start=MemList[i].start+request;    //修改被分割的区的基地址、空间、状态
         MemList[i+1].Size=MemList[i].Size-request;
         MemList[i+1].status='f';
-        MemList[i].Size=request;
+        MemList[i].Size=request;    //新分区
         MemList[i].status='u';
     }
     Display();
@@ -112,12 +131,12 @@ void WorstFit_alloc()
 void setfree()
 {
     int i,number;
-    printf("\nplease input the NUMBER you want stop:\n");
+    printf("Please input the NUMBER you want setFree: ");
     scanf("%d",&number);
-    //输入的空间是使用的
-    if(MemList[number].status=='u')
+    
+    if(MemList[number].status=='u') //输入的空间是使用的
     {
-        MemList[number].status='f';//标志为空闲
+        MemList[number].status='f';//置标志为空闲
         if(MemList[number+1].status=='f')//右侧空间为空则合并
         {
             MemList[number].Size+=MemList[number].Size;//大小合并
@@ -151,14 +170,17 @@ int main()
 {
     int x;
     InitMemList();//变量初始化
+    Display();
     while(1)
     {
         printf("\n=================================================\n");
-        printf("         1.Get a block use the WorstFit method\n");
-        printf("         2.Free a block\n");
-        printf("         3.Dispaly Mem info \n");
-        printf("         4.Exit \n");
+        printf("    1. Get a block use the WorstFit method\n");
+        printf("    2. Free a block\n");
+        printf("    3. Show all Memory info \n");
+        printf("    4. Show Free Memory info \n");
+        printf("    5. Exit \n");
         printf("=================================================\n");
+        printf("Please input the number of command: ");
         scanf("%d",&x);
         switch(x)
         {
@@ -169,9 +191,12 @@ int main()
                 setfree();    //释放在使用的空间
                 break;
             case 3:
-                Display();  //显示内存分配情况
+                Display();  //显示全部内存分配情况
                 break;
             case 4:
+                showFree(); //显示空闲内存分配表
+                break;
+            case 5:
                 exit(0);    //结束程序
         }
     }
