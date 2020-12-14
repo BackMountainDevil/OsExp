@@ -139,7 +139,7 @@ void setfree()
         MemList[number].status='f';//置标志为空闲
         if(MemList[number+1].status=='f')//右侧空间为空则合并
         {
-            MemList[number].Size+=MemList[number].Size;//大小合并
+            MemList[number].Size+=MemList[number+1].Size;//大小合并
             for(i=number+1; i<MEMSIZE-1&&MemList[i].status!='e'; i++) //i后面的空间信息表元素后移
             {
                 if(i>0)
