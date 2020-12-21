@@ -21,8 +21,8 @@ int main ()
   char line1[] = "\nName: ";
   char line2[] = "\nNo: ";
   char line3[] = "\nClass:  ";
-  int fp = open( "file.txt" , O_WRONLY);
-
+  int fp = open( "file.txt" , O_RDWR | O_CREAT);  // 以可读写方式打开文件,文件不存在则创建
+  // printf("%d",fp);
   // int n = write(fp, str,strlen(str));  // 返回写入的字节数，出错返回-1
   // printf("%d",n);
   for(int i = 0; i < 10; i++)
