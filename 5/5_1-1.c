@@ -1,9 +1,9 @@
 /*
-    File:   5_1-1
+    File:   5_1-1.c
   Author:   Kearney
    Email:   191615342@qq.com
  License:   GPL 3.0
- Version:   0.0.0
+ Version:   0.0.1
 Encoding:   utf8
     Desc:   实验任务1：编程从键盘中输入10个学生的有关数据，然后把他们转存到磁盘文件中。
             学生信息包括：学生姓名、学号、班级等；使用库函数fopen、fwrite等函数完成；
