@@ -18,33 +18,33 @@ struct BitMap		//用于存储位示图
 	int free;		//剩余的空闲块数
 }bitmap;
 
-typedef struct process		//用于存储作业 
+typedef struct process		//用于存储文件信息
 {
-	int num;				//作业序号 
-	int size;				//作业大小 
-	int *pagetable;			//页表 
-	struct process *next;	//下一作业 
-	struct process *pre;	//上一作业 
+	int num;				//用数字替代文件名 
+	int size;				//文件大小，几块 
+	int *pagetable;			//文件对应的页表 
+	struct process *next;	//下一文件 
+	struct process *pre;	//上一文件 
 }process;
 
 
-void SetProcess(process *head)		//创立作业，生成页表 
+void SetProcess(process *head)		//创立文件，生成页表 
 {
 	int setnum;
 	int i=0,j=0,k=0,finish=0;
 	process *temp = new process();
-	cout<<endl<<"请输入作业序号(数字且不为0)：";
+	cout<<endl<<"请输入文件序号(数字且不为0)：";
 	cin>>setnum;
 	
 	if(setnum == 0)
 	{
-		cout<<endl<<"错误！不能创建0号作业！";
+		cout<<endl<<"错误！不能创建0号文件！";
 		delete temp;
 		return;
 	}
 	
 	temp->num = setnum;
-	cout<<endl<<"请输入作业大小： ";
+	cout<<endl<<"请输入文件大小： ";
 	cin>>temp->size;
 	
 	if(temp->size > bitmap.free)		//判断现有空间是否足够分配 
@@ -54,7 +54,7 @@ void SetProcess(process *head)		//创立作业，生成页表
 		return;
 	}
 	
-	temp->next = head->next;	//头插法插入新作业 
+	temp->next = head->next;	//头插法插入新文件 
 	if(head->next != NULL)
 		head->next->pre = temp;
 	temp->pre = head;
@@ -69,7 +69,7 @@ void SetProcess(process *head)		//创立作业，生成页表
 			{
 				bitmap.map[i][j] = 1;
 				bitmap.free --;
-				temp->pagetable[k] = CYLINDER*i + j;
+				temp->pagetable[k] = WORD*i + j;
 				k++;
 			}
 			
@@ -78,31 +78,27 @@ void SetProcess(process *head)		//创立作业，生成页表
 		}
 	} 
 	
-	cout<<endl<<"已装入作业，页表如下："<<endl<<"页号\t";		//输出页表 
+	cout<<endl<<"已装入文件，页表如下："<<endl;
+    cout<<"页号 相对块号  柱面号  磁道号  扇区号"<<endl;
 	k = temp->size;
 	for(i=0; i<k; i++)
 	{
-		cout<<i+1<<'\t';
-	}
-	cout<<endl<<"块号\t";
-	for(j=0; j<k; j++)
-	{
-		cout<<temp->pagetable[j]<<'\t';
+		cout<<i<<'\t'<<temp->pagetable[i]<<'\t'<<temp->pagetable[i]/WORD<<'\t'<<temp->pagetable[i]%16/4<<'\t'<<temp->pagetable[i]%16%4<<endl;
 	}
 }
 
 
-void RecProcess(process *head)		//回收作业，退还内存 
+void RecProcess(process *head)		//回收文件，退还内存 
 {
 	int recnum;
 	int i=0,j=0,k=0,l=0,found=0;
 	process *temp = new process();
-	cout<<endl<<"请输入回收作业序号(数字且不为0)：";
+	cout<<endl<<"请输入回收文件序号(数字且不为0)：";
 	cin>>recnum;
 	
 	if(recnum == 0)
 	{
-		cout<<endl<<"错误！不能删除0号作业！";
+		cout<<endl<<"错误！不能删除0号文件！";
 		return;
 	}
 	
@@ -136,15 +132,15 @@ void RecProcess(process *head)		//回收作业，退还内存
 				}
 			}
 			
-			cout<<endl<<"已找到并回收序号为"<<recnum<<"的作业。";
-			cout<<endl<<"该作业大小为"<<k<<"。"<<endl;
+			cout<<endl<<"已找到并回收序号为"<<recnum<<"的文件。";
+			cout<<endl<<"该文件大小为"<<k<<"。"<<endl;
 			continue;
 		}
 	}
 	
 	if(found == 0)		//未找到进程 
 	{
-		cout<<endl<<"未找到该作业，返回。";
+		cout<<endl<<"未找到该文件，返回。";
 		return;
 	}
 	
@@ -183,12 +179,12 @@ void ShowPageTable(process *head)		//展示页表
 	int shownum;
 	int i=0,j=0,k=0,l=0,found=0;
 	process *temp = new process();
-	cout<<endl<<"请输入查看作业序号(数字且不为0)：";
+	cout<<endl<<"请输入查看文件序号(数字且不为0)：";
 	cin>>shownum;
 	
 	if(shownum == 0)
 	{
-		cout<<endl<<"错误！不能查看0号作业，返回。";
+		cout<<endl<<"错误！不能查看0号文件，返回。";
 		return;
 	}
 	
@@ -197,31 +193,27 @@ void ShowPageTable(process *head)		//展示页表
 		if(temp->num == shownum)
 		{
 			found = 1; 
-			cout<<endl<<"序号为"<<shownum<<"的作业页表如下："<<endl<<"页号\t";		//输出页表 
+			cout<<endl<<"序号为"<<shownum<<"的文件页表如下："<<endl;		//输出页表 
 			k = temp->size;
-			for(i=0; i<k; i++)
-			{
-				cout<<i+1<<'\t';
-			}
-			cout<<endl<<"块号\t";
-			for(j=0; j<k; j++)
-			{
-				cout<<temp->pagetable[j]<<'\t';
-			}
-			
-			cout<<endl<<"已找到并展示序号为"<<shownum<<"的作业页表。";
-			cout<<endl<<"该作业大小为"<<k<<"。"<<endl;
+
+			cout<<"页号 相对块号  柱面号  磁道号  扇区号"<<endl;
+            k = temp->size;
+            for(i=0; i<k; i++)
+            {
+                cout<<i<<'\t'<<temp->pagetable[i]<<'\t'<<temp->pagetable[i]/WORD<<'\t'<<temp->pagetable[i]%16/4<<'\t'<<temp->pagetable[i]%16%4<<endl;
+            }
+			cout<<"该文件大小为"<<k<<"。"<<endl;
 			continue;
 		}
 	}
 	
 	if(found == 0)		//未找到进程 
 	{
-		cout<<endl<<"未找到该作业，返回。";
+		cout<<endl<<"未找到该文件，返回。";
 		return;
 	}
 	
-	cout<<endl<<"完成作业页表展示，返回。"; 
+	cout<<endl<<"完成文件页表展示，返回。"; 
 }
 
 
@@ -246,8 +238,8 @@ int main()
 	{
 		cout<<endl<<"================菜 单===============";
 		cout<<endl<<"   0\t退出程序";
-		cout<<endl<<"   1\t创建新作业，并请求内存空间";
-		cout<<endl<<"   2\t回收作业，并返回内存；";
+		cout<<endl<<"   1\t创建新文件，并请求内存空间";
+		cout<<endl<<"   2\t回收文件，并返回内存；";
 		cout<<endl<<"   3\t展示位示图";
 		cout<<endl<<"   4\t展示进程页表";
 		cout<<endl<<"   5\t清空屏幕";
