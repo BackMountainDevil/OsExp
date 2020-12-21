@@ -110,7 +110,7 @@ void RecProcess(process *head)		//回收文件，退还内存
 			k = temp->size;
 			for(l=0; l<k; l++)		//删除数据 
 			{
-				i = temp->pagetable[l] / CYLINDER;
+				i = temp->pagetable[l] / WORD;
 				j = temp->pagetable[l] % WORD;
 				bitmap.map[i][j] = 0;
 				bitmap.free ++;
