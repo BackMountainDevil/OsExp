@@ -8,33 +8,40 @@ Encoding:   utf8
     Desc:   实验任务1：编程从键盘中输入10个学生的有关数据，然后把他们转存到磁盘文件中。
             学生信息包括：学生姓名、学号、班级等；使用库函数fopen、fwrite等函数完成；
       ref:  https://www.runoob.com/cprogramming/c-function-fwrite.html
+            https://www.runoob.com/cprogramming/c-function-fopen.html
 */
 #include<stdio.h>
  
 int main ()
 {
   FILE *fp;
-  char str[] = "                     ";
-  char line1[] = "\nName: ";
-  char line2[] = "\nNo: ";
-  char line3[] = "\nClass:  ";
-  fp = fopen( "file.txt" , "w" );
+  char name[20] = "";
+  char no[10] = "";
+  char class[10] = "";
 
-  for(int i = 0; i < 10; i++)
+  fp = fopen( "file.txt" , "w" );   //创建一个用于写入的空文件。同名则覆盖
+
+  printf("Please input the Name, No, Class of std（Split with space） \nJust like: Kearney 7 D\n");
+  for(int i = 0; i < 10; i++) //写入信息到文件
   {
-    printf("Please input the name of std: ");
-    scanf("%s",&str);
-    fwrite(line1, sizeof(line1) , 1, fp );
-    fwrite(str, sizeof(str) , 1, fp );
-    printf("Please input the no of std: ");
-    scanf("%s",&str);
-    fwrite(line2, sizeof(line2) , 1, fp );
-    fwrite(str, sizeof(str) , 1, fp );
-    printf("Please input the class of std: ");
-    scanf("%s",&str);
-    fwrite(line3, sizeof(line3) , 1, fp );
-    fwrite(str, sizeof(str) , 1, fp );
+    scanf("%s %s %s",&name, &no, &class);
+    // printf("%s %s %s\n",name, no, class);
+    fprintf(fp, "Name: %s\nNo: %s\nClass: %s\n",&name, &no, &class); // 相当于fwrite，把字符写入文件
   }
+  fclose(fp); //关闭文件
+
+  // 读取写入的内容
+  fp = fopen( "file.txt" , "r" ); 
+  while(1)
+   {
+      int c = fgetc(fp);
+      if( feof(fp) )
+      { 
+          break ;
+      }
+      printf("%c", c);
+   }
   fclose(fp);
+
   return 0;
 }
